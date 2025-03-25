@@ -1,0 +1,40 @@
+# 🔹 Ignorar archivos de entorno
+.env
+.env.local
+.env.development
+.env.production
+
+.txt
+
+# 🔹 Ignorar módulos de Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# 🔹 Archivos de compilación y caché
+dist/
+build/
+.cache/
+
+# 🔹 Configuraciones de editores de código
+.vscode/
+.idea/
+
+# 🔹 Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# 🔹 Logs y datos temporales
+logs/
+*.log
+debug.log
+npm-debug.log*
+
+# 🔹 Resultados de pruebas
+coverage/
+test-reports/
+
+# 🔹 Archivos generados por Docker (si usas Docker)
+docker-compose.override.yml
