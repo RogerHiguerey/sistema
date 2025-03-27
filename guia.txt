@@ -6,7 +6,10 @@ morgan
 dotenv
 zod
 npm i joi
+npm i mysql2-promise
+npm i supertest
 
+https://github.com/RogerHiguerey/sistema.git
 
 …or create a new repository on the command line
 echo "# sistema" >> README.md

@@ -1,14 +1,16 @@
-import 'dotenv/config';
+// src/app.js
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
-import { env } from './config/env.js';
+// Se importa la configuración centralizada (settings.js) en lugar de env.js
+import { env } from '../config/settings.js';
+// Importa el middleware para la gestión de multitenencia
+import MultiTenantManager from './core/multi-tenant-manager.js';
+// Importa el archivo central de rutas, donde se agregarán todos los endpoints de los módulos
+import apiRoutes from './routes/index.routes.js';
 
-// 1. Configuración inicial
 const app = express();
-const port = env.PORT;
 
-// 2. Middlewares esenciales
+// 1. Middlewares esenciales
 app.use(express.json());
 app.use(cors({
   origin: env.CORS_ORIGIN,
@@ -16,82 +18,31 @@ app.use(cors({
   credentials: true
 }));
 
-// 3. Conexión a MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(env.MONGODB_URI);
-    console.log('✅ MongoDB conectado');
-  } catch (error) {
-    console.error('❌ Error de conexión a MongoDB:', error);
-    process.exit(1);
-  }
-};
+// 2. Middleware de multitenencia
+// Extrae el tenantId de la solicitud y lo asigna a req.tenantId
+app.use(MultiTenantManager.tenantMiddleware);
 
-// 4. Rutas básicas
+// 3. Rutas básicas y centralizadas
+// Ruta de health check para verificar el estado del servidor
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     environment: env.NODE_ENV,
+    tenantId: req.tenantId || null,  // Verifica que el middleware inyecta el tenantId
     timestamp: new Date().toISOString()
   });
 });
 
-// 5. Manejo de errores centralizado
+// Integra todas las rutas definidas en los módulos (por ejemplo, auth, clients, etc.)
+app.use(apiRoutes);
+
+// 4. Manejo de errores centralizado
 app.use((err, req, res, next) => {
   console.error(`🔥 Error en ${req.method} ${req.path}:`, err);
-  
   res.status(500).json({
     error: env.NODE_ENV === 'development' ? err.message : 'Error interno del servidor',
     stack: env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
-// 6. Inicio del servidor
-const startServer = async () => {
-  await connectDB();
-  
-  app.listen(port, () => {
-    console.log(`
-    🚀 Servidor listo en: http://localhost:${port}
-    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-    Entorno: ${env.NODE_ENV}
-    MongoDB: ${mongoose.connection.host}
-    Versión: ${process.version}
-    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ 
-    `);
-  });
-};
-
-// 7. Iniciar aplicación
-startServer().catch(error => {
-  console.error('❌ Fallo en la inicialización:', error);
-  process.exit(1);
-});
-
-// Estructura de archivos y carpetas implementada
-// ├── /config
-// │   ├── env.js
-// ├── /controllers
-// │   ├── taxController.js
-// │   ├── userController.js
-// ├── /middlewares
-// │   ├── authMiddleware.js
-// │   ├── errorHandler.js
-// ├── /models
-// │   ├── taxModel.js
-// │   ├── userModel.js
-// ├── /routes
-// │   ├── taxRoutes.js
-// │   ├── userRoutes.js
-// ├── /services
-// │   ├── taxService.js
-// ├── /utils
-// │   ├── logger.js
-// ├── /tests
-// │   ├── tax.test.js
-// ├── app.js
-// ├── server.js
-// ├── .env
-// ├── .gitignore
-// ├── package.json
-// ├── README.md
+export default app;
