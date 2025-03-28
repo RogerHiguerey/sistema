@@ -4,6 +4,7 @@
  * Clase MultiTenantManager
  * Maneja la extracción y asignación del tenantId en las solicitudes.
  */
+
 export default class MultiTenantManager {
     /**
      * Extrae el tenantId de la solicitud.
@@ -11,6 +12,7 @@ export default class MultiTenantManager {
      * @param {Object} req - Objeto de la solicitud de Express.
      * @returns {String|null} - El tenantId o null si no se encuentra.
      */
+
     static getTenantId(req) {
       // Ejemplo: obtener el tenantId desde un header llamado 'x-tenant-id'
       const tenantId = req.headers['x-tenant-id'];
@@ -24,6 +26,7 @@ export default class MultiTenantManager {
      * @param {Object} res - Objeto de la respuesta de Express.
      * @param {Function} next - Función para pasar al siguiente middleware.
      */
+
     static tenantMiddleware(req, res, next) {
       req.tenantId = MultiTenantManager.getTenantId(req);
       // Opcional: Agregar validaciones para asegurarse de que tenantId no sea null.
